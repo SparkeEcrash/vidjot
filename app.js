@@ -1,6 +1,8 @@
 const express = require('express');
 const exphbs = require('express-handlebars');
 const methodOverride = require('method-override');
+const flash = require('connect-flash');
+const session = require('express-session');
 const mongoose = require('mongoose');
 
 const app = express();
@@ -25,6 +27,28 @@ app.use(express.json());
 
 // Method override middleware
 app.use(methodOverride('_method'));
+
+// Express session middleware
+app.use(session({
+  secret: 'secret',
+  resave: true,
+  saveUninitialized: true,
+}))
+
+
+app.use(flash());
+
+// Setting up Global variables for app.use(flash());
+app.use(function(req, res, next){
+  res.locals.success_msg = req.flash('success_msg');
+  //the above line sets up an empty flash message to input message string later with req.flash('success_msg', 'msg_string') in the response section
+
+  //{{#if success_msg}}
+  // the above line in view looks up if req.flash('success_msg', 'line') was triggered to set the success_msg as true in res.locals.success_msg
+  res.locals.error_msg = req.flash('error_msg');
+  res.locals.error = req.flash('error');
+  next();
+});
 
 // Index Route
 app.get('/', (req, res) => {
@@ -92,6 +116,7 @@ app.post('/ideas', (req, res) => {
     new Idea(newUser)
       .save()
       .then(idea => {
+        req.flash('success_msg', 'Video idea added');
         res.redirect('/ideas');
       })
   }
@@ -108,6 +133,7 @@ app.put('/ideas/:id', (req, res) => {
     idea.details = req.body.details;
     idea.save()
       .then( idea => {
+        req.flash('success_msg', 'Video idea updated');
         res.redirect('/ideas');
       })
   });
@@ -117,6 +143,10 @@ app.put('/ideas/:id', (req, res) => {
 app.delete('/ideas/:id', (req, res)=> {
   Idea.remove({_id: req.params.id})
     .then(() => {
+      // ***res.locals.success_msg = req.flash('success_msg');***
+      // the above line in app.use() set up an empty flash message in res. to receive message from req. If message is present {{success_msg}} from res.locals.success_msg turns to true
+      req.flash('success_msg', 'Video idea removed');
+      //adding string 'Video idea removed' to empty success flash message in order for success message to show up
       res.redirect('/ideas');
     });
 });
