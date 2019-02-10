@@ -1,0 +1,8 @@
+{{#if success_msg}}
+  <div class="alert alert-success">{{success_msg}}</div>
+  {{!-- {{success_msg}} refers to res.locals.success_msg that is attached to all response from express --}}
+{{/if}}
+
+{{#if error_msg}}
+  <div class="alert alert-danger">{{error_msg}}</div>
+{{/if}}
