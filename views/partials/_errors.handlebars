@@ -1,0 +1,15 @@
+{{#if error}}
+{{!-- this is for passport errors which does not submit arrays --}}
+  <div class="alert alert-danger">{{error}}</div>
+{{/if}}
+
+{{#each errors}}
+{{!-- errors = [
+  {text: 'error message one'},
+  {text: 'error message two'},
+  {text: 'error message three'}
+] --}}
+  <div class="alert alert-danger">{{text}}</div>
+{{else}}
+
+{{/each}}
