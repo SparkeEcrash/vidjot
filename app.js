@@ -4,6 +4,7 @@ const exphbs = require('express-handlebars');
 const methodOverride = require('method-override');
 const flash = require('connect-flash');
 const session = require('express-session');
+const bodyParser = require('body-parser');
 const passport = require('passport');
 const mongoose = require('mongoose');
 
@@ -40,8 +41,11 @@ app.engine('handlebars', exphbs({defaultLayout: 'main'}));
 app.set('view engine', 'handlebars');
 
 // Body parser middleware
-app.use(express.urlencoded({ extended: false }))
-app.use(express.json());
+// app.use(express.urlencoded({ extended: false }))
+// app.use(express.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+
 
 // Method override middleware
 app.use(methodOverride('_method'));
