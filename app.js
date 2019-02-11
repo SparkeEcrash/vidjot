@@ -1,21 +1,36 @@
 const express = require('express');
+const path = require('path');
 const exphbs = require('express-handlebars');
 const methodOverride = require('method-override');
 const flash = require('connect-flash');
 const session = require('express-session');
+const passport = require('passport');
 const mongoose = require('mongoose');
 
 const app = express();
+
+// Static folder
+app.use(express.static(path.join(__dirname, 'public')));
+
+//Load routes
+const ideas = require('./routes/ideas');
+const users = require('./routes/users');
+
+// Passport Config
+require('./config/passport')(passport);
+/*passport from require('passport') is passed to the config file.
+
+require('./config/passport')(passport) changes to... 
+module.exports = function(passport) in the config file and passport variable is passed to the config file. 
+
+require('./config/passport')(passport) changes to module.exports which in turn causes
+changes it to function(passport){}*/
+
 
 // Connect to mongoose
 mongoose.connect('mongodb://localhost/vidjot-dev', {useNewUrlParser: true})
   .then(() => console.log('MongoDB Connected...'))
   .catch(err => console.log(err));
-
-// Load Idea Model
-require('./models/Idea');
-const Idea = mongoose.model('ideas');
-
 
   // Handlebars Middleware
 app.engine('handlebars', exphbs({defaultLayout: 'main'}));
@@ -35,6 +50,9 @@ app.use(session({
   saveUninitialized: true,
 }))
 
+// Passport middleware *this must be after express session middleware is set up*
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use(flash());
 
@@ -47,6 +65,9 @@ app.use(function(req, res, next){
   // the above line in view looks up if req.flash('success_msg', 'line') was triggered to set the success_msg as true in res.locals.success_msg
   res.locals.error_msg = req.flash('error_msg');
   res.locals.error = req.flash('error');
+  res.locals.user = req.user || null;
+  //passport sets up a user object in request if authentication passes
+  //we can set the user object as global variable in response variable for access client side
   next();
 });
 
@@ -65,91 +86,9 @@ app.get('/about', (req, res) => {
   res.render('about');
 });
 
-// Idea Index Page
-app.get('/ideas', (req, res) => {
-  Idea.find({})
-    .sort({date: 'desc'})
-    .then(ideas => {
-      res.render('ideas/index', {
-        ideas
-      });
-    });
-});
-
-// Add Idea Form
-app.get('/ideas/add', (req, res) => {
-  res.render('ideas/add');
-});
-
-// Edit Idea Form
-app.get('/ideas/edit/:id', (req, res) => {
-  Idea.findOne({
-    _id: req.params.id
-  })
-  .then(idea => {
-    res.render('ideas/edit', {
-      idea
-    });
-  });
-});
-
-// Process Form
-app.post('/ideas', (req, res) => {
-  let errors = [];
-  if(!req.body.title) {
-    errors.push({text: 'Please add a title'});
-  }
-  if(!req.body.details) {
-    errors.push({text: 'Please add some details'});
-  }
-  if(errors.length > 0) {
-    res.render('ideas/add', {
-      errors,
-      title: req.body.title,
-      details: req.body.details
-    });
-  } else {
-    const newUser = {
-      title: req.body.title,
-      details: req.body.details
-    }
-    new Idea(newUser)
-      .save()
-      .then(idea => {
-        req.flash('success_msg', 'Video idea added');
-        res.redirect('/ideas');
-      })
-  }
-});
-
-// Edit Form Process
-app.put('/ideas/:id', (req, res) => {
-  Idea.findOne({
-    _id: req.params.id
-  })
-  .then(idea => {
-    //new values
-    idea.title = req.body.title;
-    idea.details = req.body.details;
-    idea.save()
-      .then( idea => {
-        req.flash('success_msg', 'Video idea updated');
-        res.redirect('/ideas');
-      })
-  });
-});
-
-// Delete Idea
-app.delete('/ideas/:id', (req, res)=> {
-  Idea.remove({_id: req.params.id})
-    .then(() => {
-      // ***res.locals.success_msg = req.flash('success_msg');***
-      // the above line in app.use() set up an empty flash message in res. to receive message from req. If message is present {{success_msg}} from res.locals.success_msg turns to true
-      req.flash('success_msg', 'Video idea removed');
-      //adding string 'Video idea removed' to empty success flash message in order for success message to show up
-      res.redirect('/ideas');
-    });
-});
+// Use routes
+app.use('/ideas', ideas);
+app.use('/users', users);
 
 const port = 5000;
 
