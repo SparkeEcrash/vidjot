@@ -10,8 +10,6 @@ const mongoose = require('mongoose');
 
 const app = express();
 
-// Static folder
-app.use(express.static(path.join(__dirname, 'public')));
 
 //Load routes
 const ideas = require('./routes/ideas');
@@ -30,6 +28,7 @@ changes it to function(passport){}*/
 // DB Config
   const db = require('./config/database');
 
+mongoose.Promise = global.Promise;
 
 // Connect to mongoose
 mongoose.connect(db.mongoURI, {useNewUrlParser: true})
@@ -46,6 +45,8 @@ app.set('view engine', 'handlebars');
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
+// Static folder
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Method override middleware
 app.use(methodOverride('_method'));
