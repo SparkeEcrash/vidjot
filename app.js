@@ -26,9 +26,12 @@ module.exports = function(passport) in the config file and passport variable is 
 require('./config/passport')(passport) changes to module.exports which in turn causes
 changes it to function(passport){}*/
 
+// DB Config
+  const db = require('./config/database');
+
 
 // Connect to mongoose
-mongoose.connect('mongodb://localhost/vidjot-dev', {useNewUrlParser: true})
+mongoose.connect(db.mongoURI, {useNewUrlParser: true})
   .then(() => console.log('MongoDB Connected...'))
   .catch(err => console.log(err));
 

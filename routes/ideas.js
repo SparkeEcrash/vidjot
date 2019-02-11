@@ -12,7 +12,6 @@ const Idea = mongoose.model('ideas');
 
 // Idea Index Page
 router.get('/', ensureAuthenticated, (req, res) => {
-  console.log(req.user);
   Idea.find({user: req.user.id})
     .sort({date: 'desc'})
     .then(ideas => {
