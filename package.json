@@ -6,10 +6,6 @@
   "scripts": {
     "start": "node app.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/SparkeEcrash/vidjot.git"
-  },
   "author": "",
   "license": "ISC",
   "bugs": {
